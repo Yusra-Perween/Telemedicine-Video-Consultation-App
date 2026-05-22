@@ -20,6 +20,16 @@
             align-items:center;
             justify-content:center;
             font-size:22px;
+            overflow: hidden;
+            position: relative;
+        }
+        video {
+            width: 50%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #localVideo {
+            border-right: 2px solid #333;
         }
         .controls{
             margin-top:20px;
@@ -42,14 +52,111 @@
     <h1>Video Consultation Room</h1>
     <h3>Appointment ID: {{ appointment_id }}</h3>
 
-    <div class="video-box">
-        🎥 Camera Streaming...
+    <div class="video-box" id="video-container">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
     </div>
 
     <div class="controls">
-        <button class="btn mute">Mute</button>
-        <button class="btn camera">Camera Off</button>
+        <button class="btn mute" id="muteBtn" onclick="toggleMute()">Mute</button>
+        <button class="btn camera" id="cameraBtn" onclick="toggleCamera()">Camera Off</button>
         <a href="/dashboard"><button class="btn end">End Call</button></a>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const ROOM_ID = "{{ appointment_id }}";
+        
+        let localStream;
+        let peerConnection;
+        
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        
+        const servers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        };
+        
+        // 1. Get media
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+            localStream = stream;
+            localVideo.srcObject = stream;
+            
+            socket.emit('join', { room: ROOM_ID });
+        }).catch(error => {
+            console.error('Error accessing media devices.', error);
+            alert("Could not access camera/microphone. Please ensure permissions are granted.");
+        });
+
+        // 2. Ready signal from the other peer
+        socket.on('ready', () => {
+            createOffer();
+        });
+        
+        socket.on('offer', async (data) => {
+            if(!peerConnection) createPeerConnection();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socket.emit('answer', { answer: answer, room: ROOM_ID });
+        });
+        
+        socket.on('answer', async (data) => {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        });
+        
+        socket.on('ice_candidate', async (data) => {
+            if(peerConnection) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        });
+        
+        function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(servers);
+            
+            peerConnection.onicecandidate = event => {
+                if(event.candidate) {
+                    socket.emit('ice_candidate', { candidate: event.candidate, room: ROOM_ID });
+                }
+            };
+            
+            peerConnection.ontrack = event => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+            
+            if(localStream) {
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+            }
+        }
+        
+        async function createOffer() {
+            createPeerConnection();
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('offer', { offer: offer, room: ROOM_ID });
+        }
+
+        // UI Controls
+        function toggleMute() {
+            const audioTrack = localStream.getAudioTracks()[0];
+            if(audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                document.getElementById('muteBtn').innerText = audioTrack.enabled ? 'Mute' : 'Unmute';
+            }
+        }
+
+        function toggleCamera() {
+            const videoTrack = localStream.getVideoTracks()[0];
+            if(videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                document.getElementById('cameraBtn').innerText = videoTrack.enabled ? 'Camera Off' : 'Camera On';
+            }
+        }
+    </script>
 </body>
 </html>
