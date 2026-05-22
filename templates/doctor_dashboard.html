@@ -1,0 +1,12 @@
+<div class="upcoming-appointments">
+    {% for app in appointments %}
+        <div class="appointment-card">
+            <p>Patient: {{ app.patient_name }}</p>
+            <p>Time: {{ app.date }} at {{ app.time }}</p>
+            <button class="join-consultation"
+
+            </button>
+        </div>
+    {% endfor %}
+</div>
+
