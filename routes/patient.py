@@ -2,7 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from extensions import db
 from models import Appointment, Doctor, User, Payment
 from datetime import datetime
-from models import Appointment, Doctor, User, Payment
+import stripe
+import config
+
+stripe.api_key = config.STRIPE_SECRET_KEY
 
 patient_bp = Blueprint('patient', __name__)
 
@@ -64,13 +67,47 @@ def book_appointment():
 def payment_page():
     if 'temp_appointment' not in session:
         return redirect(url_for('patient.book_appointment'))
-    return render_template('payment.html')
+        
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': 2000, # $20.00
+                        'product_data': {
+                            'name': 'Doctor Consultation',
+                        },
+                    },
+                    'quantity': 1,
+                }
+            ],
+            mode='payment',
+            success_url=request.url_root + 'payment_success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.url_root + 'dashboard',
+        )
+        return redirect(checkout_session.url, code=303)
+    except Exception as e:
+        flash(f'Payment error: {str(e)}', 'danger')
+        return redirect(url_for('patient.book_appointment'))
 
 @patient_bp.route('/payment_success')
 def payment_success():
-    if 'temp_appointment' not in session:
-        flash('Session expired', 'danger')
+    session_id = request.args.get('session_id')
+    if not session_id or 'temp_appointment' not in session:
+        flash('Invalid session or session expired', 'danger')
         return redirect(url_for('patient.book_appointment'))
+
+    try:
+        # Verify payment with Stripe
+        stripe_session = stripe.checkout.Session.retrieve(session_id)
+        if stripe_session.payment_status != 'paid':
+            flash('Payment was not successful', 'danger')
+            return redirect(url_for('patient.dashboard'))
+    except Exception as e:
+        flash(f'Payment verification error: {str(e)}', 'danger')
+        return redirect(url_for('patient.dashboard'))
 
     temp_data = session.pop('temp_appointment')
     
@@ -86,14 +123,14 @@ def payment_success():
 
     new_payment = Payment(
         appointment_id=new_appointment.id,
-        stripe_payment_id="FAKE_PAYMENT",
+        stripe_payment_id=session_id,
         amount=2000,
         status='completed'
     )
     db.session.add(new_payment)
     db.session.commit()
 
-    flash('Appointment booked successfully!', 'success')
+    flash('Appointment booked and paid successfully!', 'success')
     return redirect(url_for('patient.dashboard'))
 
 @patient_bp.route('/cancel/<int:appointment_id>')
