@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="/static/dashboard_style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Your Appointments</h1>
+      <div style="text-align: right; margin-bottom: 15px">
+        <a href="/logout" class="btn">Logout</a>
+        {% if session.role == 'patient' %}
+        <a href="/book_appointment" class="btn">Book New Appointment</a>
+        {% endif %}
+      </div>
+
+      <table>
+        <tr>
+          <th>
+            {% if session.role == 'patient' %}Doctor{% else %}Patient{% endif %}
+          </th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+        {% for app in appointments %}
+        <tr>
+          <td>{{ app[2] }}</td>
+          <td>{{ app[3] }}</td>
+          <td>{{ app[4] }}</td>
+          <td>{{ app[5] }}</td>
+          <td>
+            {% if app[5] == 'booked' %}
+            <a href="/cancel/{{ app[0] }}" class="btn btn-cancel">Cancel</a>
+            <a href="/video_consultation/{{ app[0] }}" class="btn btn-video">Video Call</a>
+            <a href="/complete/{{ app[0] }}" class="btn btn-complete">Complete</a>
+            {% elif app[5] == 'completed' %}
+            <span class="badge completed">Completed</span>
+            {% elif app[5] == 'cancelled' %}
+            <span class="badge cancelled">Cancelled</span>
+            {% endif %}
+          </td>
+        </tr>
+
+        {% endfor %}
+      </table>
+    </div>
+  </body>
+</html>

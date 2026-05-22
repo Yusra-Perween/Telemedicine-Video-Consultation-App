@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Appointment</title>
+
+    <link rel="stylesheet" href="/static/book_appointment_style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Book an Appointment</h1>
+      <form method="POST" action="/book_appointment">
+        <label for="doctor">Select Doctor:</label>
+        <select name="doctor_id" required>
+          {% for doctor in doctors %}
+          <option value="{{ doctor[0] }}">
+            {{ doctor[2] }} ({{ doctor[3] }})
+          </option>
+          {% endfor %}
+        </select>
+
+        <label for="date">Date:</label>
+        <input type="date" name="date" required />
+
+        <label for="time">Time:</label>
+        <input type="time" name="time" required />
+
+        <div class="pricing">
+          <h3>Appointment Fee: $20.00</h3>
+        </div>
+
+        <button type="submit">Book Now</button>
+      </form>
+    </div>
+    <script src="/static/script.js"></script>
+  </body>
+</html>
