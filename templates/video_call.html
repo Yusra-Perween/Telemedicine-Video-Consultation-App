@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Consultation</title>
+    <style>
+        body{
+            font-family:Arial;
+            background:#0b1a2c;
+            color:white;
+            text-align:center;
+            padding-top:40px;
+        }
+        .video-box{
+            width:800px;
+            height:450px;
+            background:black;
+            margin:auto;
+            border-radius:10px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+        }
+        .controls{
+            margin-top:20px;
+        }
+        .btn{
+            padding:12px 25px;
+            margin:10px;
+            border:none;
+            border-radius:6px;
+            font-size:16px;
+            cursor:pointer;
+        }
+        .end{background:red;color:white;}
+        .mute{background:#ffc107;}
+        .camera{background:#17a2b8;color:white;}
+    </style>
+</head>
+
+<body>
+    <h1>Video Consultation Room</h1>
+    <h3>Appointment ID: {{ appointment_id }}</h3>
+
+    <div class="video-box">
+        🎥 Camera Streaming...
+    </div>
+
+    <div class="controls">
+        <button class="btn mute">Mute</button>
+        <button class="btn camera">Camera Off</button>
+        <a href="/dashboard"><button class="btn end">End Call</button></a>
+    </div>
+</body>
+</html>
