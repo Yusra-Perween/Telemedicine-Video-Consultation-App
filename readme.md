@@ -1,149 +1,91 @@
-# 🏥 Hospital System – Video Calling with Doctors
+# 🏥 Hospital System – Telemedicine & Video Consultation App
 
-A complete Flask + MySQL telemedicine web application where patients can book appointments, make payments, video consultations and chat in real-time with doctors.
+A complete, modern Flask telemedicine web application featuring real-time WebRTC video consultations, secure Stripe payments, role-based dashboards, and cutting-edge AI-powered medical assistants.
 
 ## 👩‍💻 Developed By
 **Yusra Perween**
 
-## 🚀 Features
-
-### 👤 Authentication
-- Patient & Doctor Registration  
-- Secure Login / Logout  
-- Role-based Dashboard  
-
-### 📅 Appointment System
-- Patients can book appointments  
-- Doctors can view appointments  
-- Cancel & Complete appointment feature  
-
-### 💳 Payment Gateway (Demo)
-- Fake payment page (Stripe removed)  
-- Payment recorded in database  
-- Appointment confirmed after payment  
-
-### 🎥 Video Consultation
-- Start video call after booking  
-- Camera + microphone access  
-- WebRTC consultation  
-
-### 💬 Live Chat During Video Call ⭐
-- Real-time chat using Flask-SocketIO  
-- Instant messaging between doctor & patient during video call  
-
 ---
 
-## 🗄️ Database
-MySQL database stores:
+## 🚀 Key Features
 
-- Users  
-- Doctors  
-- Appointments  
-- Payments  
+### 👤 Authentication & Security
+- Patient & Doctor Registration
+- Secure password hashing using `werkzeug.security`
+- Role-based Access Control (Patient vs. Doctor dashboards)
+
+### 📅 Appointment & Booking System
+- Browse approved doctors
+- Select available dates and times
+- Dynamic dashboard rendering based on user role
+- Cancel & Complete appointment feature
+
+### 💳 Real Stripe Payment Integration
+- Secure Stripe Checkout Sessions
+- Payment verification before confirming appointments
+- Seamless redirect flows
+
+### 🎥 Real-Time WebRTC Video Consultation
+- Built-in WebRTC peer-to-peer video calling
+- `Flask-SocketIO` backend for fast, real-time signaling
+- Native camera and microphone access with mute/video-off controls
+
+### 🤖 AI-Powered Features (OpenAI)
+- **AI Symptom Checker:** Patients describe symptoms and get immediate triage and specialist recommendations.
+- **AI Report Summarizer:** Patients can paste complex medical reports to get plain-English summaries.
+- **AI Doctor Notes Assistant:** Doctors type brief shorthand notes, and the AI expands them into professional clinical documentation.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Technology | Used |
-|------------|------|
-| Backend | Python Flask |
-| Database | MySQL (XAMPP) |
-| Frontend | HTML, CSS, JavaScript |
-| Video Calling | WebRTC |
-| Real-time Chat | Flask-SocketIO |
+| Technology | Used For |
+|------------|----------|
+| **Backend** | Python, Flask, Flask-SQLAlchemy, Flask-SocketIO |
+| **Database** | SQLite (Plug-and-play, no external DB needed!) |
+| **Frontend** | HTML5, Vanilla CSS, JavaScript, Jinja2 Templates |
+| **Video Calling** | WebRTC (RTCPeerConnection), Socket.io |
+| **Payments** | Stripe API |
+| **Artificial Intelligence** | OpenAI GPT-3.5 API |
 
 ---
 
-## 📂 Project Structure
+## ⚙️ How to Run This Project Locally
 
-Hospital-System-Video-Calling-with-Doctors  
-│  
-├── static/  
-├── templates/  
-├── app.py  
-├── config.py  
-├── database.sql  
-├── requirements.txt  
-└── README.md  
+This project has been completely refactored to use **SQLite** and an **ORM**, meaning you **NO LONGER NEED XAMPP OR MYSQL**. It runs perfectly right out of the box!
 
----
+### 🔹 Step 1 — Clone the Repository
+```bash
+git clone https://github.com/Yusra-Perween/Telemedicine-Video-Consultation-App.git
+cd Telemedicine-Video-Consultation-App
+```
 
-## ⚙️ How to Run This Project
+### 🔹 Step 2 — Set Up Environment Variables
+Rename `.env.example` to `.env` and fill in your keys:
+```env
+SECRET_KEY=your_secret_flask_key
+STRIPE_PUBLIC_KEY=your_stripe_public_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+OPENAI_API_KEY=your_openai_api_key
+```
 
-### 🔹 Step 1 — Clone Repository
-
-git clone https://github.com/Yusra-Perween/Hospital-System-Video-Calling-with-Doctors.git
-
-cd Hospital-System-Video-Calling-with-Doctors
-
-
-### 🔹 Step 2 — Start XAMPP
-Open XAMPP Control Panel and start:
-
-- Apache  
-- MySQL  
-
-Keep XAMPP running in the background.
-
----
-
-### 🔹 Step 3 — Create the Database
-
-Open browser and go to:
-
-
-http://localhost/phpmyadmin
-
-
-1. Click **New**  
-2. Create database → **hospital_db**  
-3. Open database → Click **Import**  
-4. Import file → **database.sql**
-
----
-
-### 🔹 Step 4 — Configure Database Connection
-
-Open **config.py** and ensure:
-
-
-MYSQL_HOST = "localhost"
-MYSQL_USER = "root"
-MYSQL_PASSWORD = ""
-MYSQL_DB = "hospital_db"
-MYSQL_PORT = 3306
-
-
----
-
-### 🔹 Step 5 — Install Required Libraries
-
-Open terminal inside project folder and run:
-
+### 🔹 Step 3 — Create Virtual Environment & Install Dependencies
+```bash
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+source venv/bin/activate
 
 pip install -r requirements.txt
+```
 
-
----
-
-### 🔹 Step 6 — Run the Application
-
-
+### 🔹 Step 4 — Run the Application
+Because this project uses Flask-SocketIO, start the app using:
+```bash
 python app.py
+```
+The database (`app.db`) and all tables will automatically be created on the first run.
 
-
-You should see:
-
-
-Running on http://127.0.0.1:5000/
-
-
----
-
-### 🔹 Step 7 — Open in Browser
-
-
-http://127.0.0.1:5000
-
-
+### 🔹 Step 5 — Open in Browser
+Visit **http://127.0.0.1:5000** and start testing!
