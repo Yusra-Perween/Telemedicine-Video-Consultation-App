@@ -24,7 +24,7 @@ def register():
                 user_id=new_user.id,
                 specialization=request.form['specialization'],
                 bio=request.form['bio'],
-                approval_status='pending'
+                approval_status='approved'
             )
             db.session.add(new_doctor)
 
