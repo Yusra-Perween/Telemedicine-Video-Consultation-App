@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Notes Assistant – TeleMed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f2c1a, #1a4731, #0d3321);
+            min-height: 100vh;
+            color: #fff;
+            padding: 40px 20px;
+        }
+        .container { max-width: 780px; margin: auto; }
+        .header { text-align: center; margin-bottom: 36px; }
+        .header h1 { font-size: 2.2rem; font-weight: 700; }
+        .header h1 span { color: #34d399; }
+        .header p { color: #a0aec0; margin-top: 8px; }
+
+        .badge {
+            display: inline-block;
+            background: rgba(52,211,153,0.12);
+            border: 1px solid #34d399;
+            color: #34d399;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #e2e8f0; }
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.07);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            resize: vertical;
+            min-height: 140px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        textarea:focus { border-color: #34d399; }
+        textarea::placeholder { color: #718096; }
+
+        .btn-expand {
+            width: 100%;
+            padding: 14px;
+            margin-top: 16px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #065f46, #34d399);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-expand:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-expand:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .result-box {
+            display: none;
+            margin-top: 24px;
+            background: rgba(52,211,153,0.07);
+            border: 1px solid rgba(52,211,153,0.3);
+            border-radius: 12px;
+            padding: 24px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+        }
+        .result-box.visible { display: block; }
+
+        .copy-btn {
+            display: none;
+            margin-top: 12px;
+            padding: 8px 20px;
+            border: 1px solid #34d399;
+            border-radius: 8px;
+            background: transparent;
+            color: #34d399;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: rgba(52,211,153,0.12); }
+        .copy-btn.visible { display: inline-block; }
+
+        .spinner { display: none; text-align: center; margin-top: 20px; color: #34d399; }
+        .spinner.visible { display: block; }
+
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: #34d399;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="nav-link">← Back to Dashboard</a>
+        <div class="header">
+            <div class="badge">✨ AI Powered</div>
+            <h1>AI Doctor Notes <span>Assistant</span></h1>
+            <p>Type brief consultation notes. AI will expand them into a professional clinical record.</p>
+        </div>
+
+        <div class="card">
+            <label for="notes">Your brief notes</label>
+            <textarea id="notes" placeholder="e.g. Patient, 34F, complaint: knee pain 2 weeks, worsens on stairs, no swelling, no fever. Given ibuprofen, physio referral."></textarea>
+            <button class="btn-expand" id="expandBtn" onclick="expandNotes()">📝 Expand to Clinical Notes</button>
+        </div>
+
+        <div class="spinner" id="spinner">🤖 AI is writing professional notes...</div>
+        <div class="result-box" id="result"></div>
+        <button class="copy-btn" id="copyBtn" onclick="copyResult()">📋 Copy to Clipboard</button>
+    </div>
+
+    <script>
+        async function expandNotes() {
+            const notes = document.getElementById('notes').value.trim();
+            if (!notes) { alert('Please enter your brief notes first.'); return; }
+
+            const btn = document.getElementById('expandBtn');
+            const spinner = document.getElementById('spinner');
+            const result = document.getElementById('result');
+            const copyBtn = document.getElementById('copyBtn');
+
+            btn.disabled = true;
+            spinner.classList.add('visible');
+            result.classList.remove('visible');
+            copyBtn.classList.remove('visible');
+
+            try {
+                const res = await fetch('/api/ai/expand-notes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes })
+                });
+                const data = await res.json();
+                result.textContent = data.result || data.error;
+                result.classList.add('visible');
+                copyBtn.classList.add('visible');
+            } catch (e) {
+                result.textContent = '⚠️ Something went wrong. Please try again.';
+                result.classList.add('visible');
+            }
+
+            btn.disabled = false;
+            spinner.classList.remove('visible');
+        }
+
+        function copyResult() {
+            const text = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                document.getElementById('copyBtn').textContent = '✅ Copied!';
+                setTimeout(() => { document.getElementById('copyBtn').textContent = '📋 Copy to Clipboard'; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

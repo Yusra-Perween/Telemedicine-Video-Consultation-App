@@ -19,11 +19,13 @@ def create_app():
     from routes.auth import auth_bp
     from routes.patient import patient_bp
     from routes.doctor import doctor_bp
+    from routes.ai import ai_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(patient_bp)
     app.register_blueprint(doctor_bp)
+    app.register_blueprint(ai_bp)
 
     socketio.init_app(app)
     import events # Register socket events
@@ -37,5 +39,5 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
