@@ -8,8 +8,22 @@
     <link rel="stylesheet" href="/static/book_appointment_style.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Book an Appointment</h1>
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px;
+                      {% if category == 'danger' %}color: #a94442; background-color: #f2dede; border-color: #ebccd1;
+                      {% elif category == 'success' %}color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6;
+                      {% else %}color: #31708f; background-color: #d9edf7; border-color: #bce8f1;{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <a href="/dashboard" class="btn" style="background-color: #6c757d; margin-bottom: 15px;">&larr; Back to Dashboard</a>
+    <h1>Book an Appointment</h1>
       <form method="POST" action="/book_appointment">
         <label for="doctor">Select Doctor:</label>
         <select name="doctor_id" required>
