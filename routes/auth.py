@@ -13,6 +13,11 @@ def register():
         password = request.form['password']
         role = request.form['role']
         
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email address already in use. Please use a different email.', 'danger')
+            return redirect(url_for('auth.register'))
+        
         hashed_password = generate_password_hash(password)
 
         new_user = User(name=name, email=email, password=hashed_password, role=role)
